@@ -6,4 +6,4 @@ In RDF, you have the types URI \< Resource \< Value (in terms of breadth).  What
 
 Instead, I have ended up using 3-tuples with the broadest possible type, and then an 'isValidTuple' method to determine if the 3-type has the correct structure for an RDF triple.
 
-Currently, all of the code is contained in 'Test.fs'.
+Currently, all of the code is contained in 'Tests.fs'.
