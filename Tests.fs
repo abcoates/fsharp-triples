@@ -2,7 +2,6 @@
 module FsharpTripleTests
 
 open System
-open System.Collections.Generic
 open Xunit
 
 type Pattern = // based on what you need to represent a SPARQL query
