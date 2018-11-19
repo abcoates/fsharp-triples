@@ -36,6 +36,8 @@ let isValidTriple (t:Triple): bool =
 
 type FilterResult = Map<string, Pattern list> * TripleList
 
+let initFilterResult (tl:TripleList): FilterResult = (List.empty |> Map.ofList, tl)
+
 // Always construct a new triple using 'buildTriple'
 let buildTriple (subj: Pattern) (pred: Pattern) (obj: Pattern): Triple option =
     let triple: Triple = (subj, pred, obj)
