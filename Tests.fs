@@ -34,9 +34,11 @@ let isValidTriple (t:Triple): bool =
     | (s, p, o) when s.isResource && p.isURI && o.isValue -> true
     | _ -> false
 
-type FilterResult = Map<string, Pattern list> * TripleList
+type FilterResult = { triples: TripleList; variables: Map<string, Pattern list> }
 
-let initFilterResult (tl:TripleList): FilterResult = (List.empty |> Map.ofList, tl)
+let initFilterResult (tl:TripleList): FilterResult = { triples = tl; variables = List.empty |> Map.ofList }
+
+let emptyFilterResult: FilterResult = List.empty |> initFilterResult
 
 // Always construct a new triple using 'buildTriple'
 let buildTriple (subj: Pattern) (pred: Pattern) (obj: Pattern): Triple option =
@@ -44,6 +46,14 @@ let buildTriple (subj: Pattern) (pred: Pattern) (obj: Pattern): Triple option =
     if (isValidTriple triple)
     then Some(triple)
     else None
+
+let rec applyPattern (triplePattern:TriplePattern) (previousResults:FilterResult): FilterResult =
+    emptyFilterResult // TODO: put in the real code here
+
+// Functions for chaining the application of filters
+let (|>>) (tp:TriplePattern) (tl:TripleList) = applyPattern tp (tl |> initFilterResult) // TripleList to FilterResult
+let (>>>) = applyPattern // FilterResult to FilterResult
+let (>>|) (fr:FilterResult) = fr.triples // FilterResult to TripleList
 
 [<Fact>]
 let ``a triple can be constructed`` () =
