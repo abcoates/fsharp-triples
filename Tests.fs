@@ -1,4 +1,5 @@
 ﻿// Test of using F# discriminated unions for representing RDF triples + related SPARQL concepts
+// Uses 'active patterns' to simulate subsets of discriminated unions.
 module FsharpTripleTests
 
 open System
@@ -10,29 +11,32 @@ type Pattern = // based on what you need to represent a SPARQL query
 | IRI of string
 | Function of (Object -> bool)
 | Variable of string
-    member x.isURI: bool =
-        match x with
-        | IRI _ -> true
-        | _ -> false
-    member x.isResource: bool =
-        match x with
-        | x when x.isURI -> true
-        | Blank _ -> true
-        | _ -> false
-    member x.isValue: bool =
-        match x with
-        | x when x.isResource -> true
-        | Obj _ -> true
-        | _ -> false
+
+let (|URI|_|) (p:Pattern) =
+    match p with
+    | IRI _ -> Some(p)
+    | _ -> None
+
+let (|Resource|_|) (p:Pattern) =
+    match p with
+    | URI p -> Some(p)
+    | Blank _ -> Some(p)
+    | _ -> None
+
+let (|Value|_|) (p:Pattern) =
+    match p with
+    | Resource p -> Some(p)
+    | Obj _ -> Some(p)
+    | _ -> None
 
 type Triple = Pattern * Pattern * Pattern // would ideally be Resource * IRI * Value - see 'isValidTriple'
 type TripleList = Triple list
 type TriplePattern = Pattern * Pattern * Pattern
 
-let isValidTriple (t:Triple): bool =
+let (|ValidTriple|_|) (t:Triple) =
     match t with
-    | (s, p, o) when s.isResource && p.isURI && o.isValue -> true
-    | _ -> false
+    | (Resource s, URI p, Value o) -> Some(t)
+    | _ -> None
 
 type FilterResult = { triples: TripleList; variables: Map<string, Pattern list> }
 
@@ -43,9 +47,9 @@ let emptyFilterResult: FilterResult = List.empty |> initFilterResult
 // Always construct a new triple using 'buildTriple'
 let buildTriple (subj: Pattern) (pred: Pattern) (obj: Pattern): Triple option =
     let triple: Triple = (subj, pred, obj)
-    if (isValidTriple triple)
-    then Some(triple)
-    else None
+    match triple with
+    | ValidTriple triple -> Some(triple)
+    | _ -> None
 
 let rec applyPattern (triplePattern:TriplePattern) (previousResults:FilterResult): FilterResult =
     emptyFilterResult // TODO: put in the real code here
